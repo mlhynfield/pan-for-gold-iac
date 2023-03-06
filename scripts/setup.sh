@@ -74,10 +74,11 @@ aws iam attach-role-policy \
 --policy-arn "$policy_arn"
 
 # Create and tag S3 bucket
-aws s3api create-bucket --bucket pan-for-gold-tf-backend-$ACCOUNT_ID
+aws s3api create-bucket \
+--bucket pan-for-gold-tf-backend-$ACCOUNT_ID \
+--acl private
 aws s3api put-bucket-tagging \
 --bucket pan-for-gold-tf-backend-$ACCOUNT_ID \
---acl private \
 --tagging "TagSet=[{Key=app,Value=pan-for-gold}]"
 
 # Create and tag DynamoDB table
