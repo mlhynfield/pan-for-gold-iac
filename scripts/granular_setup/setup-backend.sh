@@ -28,10 +28,14 @@ set -e
 export ACCOUNT_ID="`aws sts get-caller-identity --output text --query Account`"
 set +e
 
-# Create and tag S3 bucket
+# Create S3 bucket
 aws s3api create-bucket \
+--bucket pan-for-gold-tf-backend-$ACCOUNT_ID
+# Block all public access to S3 bucket
+aws s3api put-public-access-block \
 --bucket pan-for-gold-tf-backend-$ACCOUNT_ID \
---acl private
+--public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+# Tag S3 bucket
 aws s3api put-bucket-tagging \
 --bucket pan-for-gold-tf-backend-$ACCOUNT_ID \
 --tagging "TagSet=[{Key=app,Value=pan-for-gold}]"
