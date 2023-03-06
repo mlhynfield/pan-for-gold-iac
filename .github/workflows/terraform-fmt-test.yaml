@@ -1,0 +1,59 @@
+name: Terraform Format & Test
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '**.tf'
+env:
+  AWS_IAM_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActions-Pan-For-Gold
+  AWS_REGION: us-east-1
+  BUCKET_NAME: pan-for-gold-tf-backend-${{ secrets.AWS_ACCOUNT_ID }}
+  BUCKET_REGION: us-east-1
+  CLUSTER_NAME: terraform-test
+  DYNAMODB_NAME: GitHubActions-Pan-For-Gold-Terraform-Lock
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+jobs:
+  check_format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Format
+        id: format
+        run: >
+          terraform fmt -check -recursive
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ env.AWS_IAM_ROLE }}
+          role-session-name: GitHubActionsTerraformSession
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        id: init
+        run: >
+          terraform init -no-color
+          -backend-config bucket=${{ env.BUCKET_NAME }}
+          -backend-config key=${{ env.CLUSTER_NAME }}/eks_on_vpc.tfstate
+          -backend-config region=${{ env.BUCKET_REGION }}
+          -backend-config dynamodb_table=${{ env.DYNAMODB_NAME }}
+
+      - name: Terraform Plan
+        id: plan
+        run: >
+          terraform plan -no-color -compact-warnings
+          -var region=${{ env.AWS_REGION }}
+          -var cluster_name=${{ env.CLUSTER_NAME }}
