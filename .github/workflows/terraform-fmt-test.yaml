@@ -43,15 +43,17 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
+        working-directory: terraform
         id: init
         run: >
           terraform init -no-color
           -backend-config bucket=${{ env.BUCKET_NAME }}
-          -backend-config key=${{ env.CLUSTER_NAME }}/eks_on_vpc.tfstate
+          -backend-config key=${{ env.CLUSTER_NAME }}/test.tfstate
           -backend-config region=${{ env.BUCKET_REGION }}
           -backend-config dynamodb_table=${{ env.DYNAMODB_NAME }}
 
       - name: Terraform Plan
+        working-directory: terraform
         id: plan
         run: >
           terraform plan -no-color -compact-warnings
