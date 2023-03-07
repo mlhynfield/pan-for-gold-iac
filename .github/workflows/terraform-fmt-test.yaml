@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - '**.tf'
+  workflow_dispatch:
 env:
   AWS_IAM_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActions-Pan-For-Gold
   AWS_REGION: us-east-1
