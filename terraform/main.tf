@@ -32,6 +32,7 @@ module "nodepool" {
   name = "${local.name}-${each.key}"
 
   ami                         = "ami-0f254a6bcc5bdad58"
+  ami_ssm_parameter           = "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2"
   instance_type               = "t4g.micro"
   key_name                    = module.key_pair.key_pair_name
   vpc_security_group_ids      = [module.security_group.security_group_id]
@@ -44,7 +45,7 @@ module "nodepool" {
   root_block_device = [
     {
       encrypted   = true
-      volume_type = "gp3"
+      volume_type = "gp2"
       throughput  = 200
       volume_size = 50
     },
