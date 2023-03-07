@@ -9,21 +9,21 @@ locals {
 }
 
 module "vpc" {
-  source = "modules/vpc"
+  source = "./modules/vpc"
 
   name   = local.name
   region = local.region
 }
 
 module "security_group" {
-  source = "modules/security_group"
+  source = "./modules/security_group"
 
   name   = local.name
   region = local.region
 }
 
 module "key_pair" {
-  source = "modules/key_pair"
+  source = "./modules/key_pair"
 
   name       = local.name
   region     = local.region
@@ -31,7 +31,7 @@ module "key_pair" {
 }
 
 module "nodepool" {
-  source = "modules/nodepool"
+  source = "./modules/nodepool"
 
   name   = local.name
   region = local.region
