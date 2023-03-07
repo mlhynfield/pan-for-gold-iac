@@ -4,29 +4,13 @@
         {
             "Effect": "Allow",
             "Action": [
-                "s3:ListBucket",
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject"
-            ],
-            "Resource": "arn:aws:s3:::pan-for-gold-tf-backend-ACCOUNT_ID"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:DescribeTable",
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:DeleteItem"
-            ],
-            "Resource": "arn:aws:dynamodb:*:*:table/GitHubActions-Pan-For-Gold-Terraform-Lock"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
                 "ec2:*",
                 "iam:*",
-                "autoscaling:*"
+                "autoscaling:*",
+                "elasticloadbalancing:*",
+                "s3:*",
+                "dynamodb:*",
+                "ssm:GetParameter"
             ],
             "Resource": "*"
         }
