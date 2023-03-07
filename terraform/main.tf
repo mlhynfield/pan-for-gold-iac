@@ -8,6 +8,10 @@ locals {
 
   public_key = var.public_key
 
+  node_list = [
+    "node01"
+  ]
+
   user_data = <<-EOT
   #!/bin/bash
   echo "Panning for gold!"
@@ -23,7 +27,7 @@ module "nodepool" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 4.3"
 
-  for_each = toset(["node01"])
+  for_each = toset(local.node_list)
 
   name = "${local.name}-${each.key}"
 
@@ -32,7 +36,7 @@ module "nodepool" {
   key_name                    = module.key_pair.key_pair_name
   vpc_security_group_ids      = [module.security_group.security_group_id]
   associate_public_ip_address = true
-  subnet_id                   = module.vpc.public_subnets[index("${each.key}", "${each.value}") % length(module.vpc.public_subnets)]
+  subnet_id                   = module.vpc.public_subnets[index(local.node_list, "${each.value}") % length(module.vpc.public_subnets)]
 
   user_data_base64            = base64encode(local.user_data)
   user_data_replace_on_change = true
