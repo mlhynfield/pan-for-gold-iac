@@ -26,8 +26,8 @@ module "nodepool" {
 
   ami                         = "ami-0f254a6bcc5bdad58"
   instance_type               = "t4g.micro"
-  key_name                    = local.name
-  vpc_security_group_ids      = ["sg-12345678"]
+  key_name                    = module.key_pair.key_pair_name
+  vpc_security_group_ids      = [module.security_group.security_group_id]
   associate_public_ip_address = true
   subnet_id                   = module.vpc.public_subnets[index(each.key, each.value) % length(module.vpc.public_subnets)]
 
@@ -46,9 +46,6 @@ module "nodepool" {
       volume_type = "gp3"
       throughput  = 200
       volume_size = 50
-      tags = {
-        app = "pan-for-gold"
-      }
     },
   ]
 

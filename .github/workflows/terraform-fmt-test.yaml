@@ -46,6 +46,8 @@ jobs:
       - name: Terraform Init
         working-directory: terraform
         id: init
+        env:
+          TF_VAR_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
         run: >
           terraform init -no-color
           -backend-config bucket=${{ env.BUCKET_NAME }}
@@ -56,6 +58,8 @@ jobs:
       - name: Terraform Plan
         working-directory: terraform
         id: plan
+        env:
+          TF_VAR_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
         run: >
           terraform plan -no-color -compact-warnings
           -var region=${{ env.AWS_REGION }}
