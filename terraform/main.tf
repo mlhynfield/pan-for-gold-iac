@@ -21,7 +21,7 @@ locals {
 # EC2 nodepool
 module "nodepool" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 3.0"
+  version = "~> 4.3"
 
   for_each = toset(["node01"])
 
@@ -33,12 +33,6 @@ module "nodepool" {
   vpc_security_group_ids      = [module.security_group.security_group_id]
   associate_public_ip_address = true
   subnet_id                   = module.vpc.public_subnets[index("${each.key}", "${each.value}") % length(module.vpc.public_subnets)]
-
-  create_iam_instance_profile = true
-  iam_role_description        = "IAM role for EC2 instance"
-  iam_role_policies = {
-    AdministratorAccess = "arn:aws:iam::aws:policy/AdministratorAccess"
-  }
 
   user_data_base64            = base64encode(local.user_data)
   user_data_replace_on_change = true
