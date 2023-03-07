@@ -1,6 +1,6 @@
-name: Terraform Format & Test
+name: Terraform Apply
 on:
-  pull_request:
+  push:
     branches:
       - master
     paths:
@@ -16,19 +16,7 @@ permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
 jobs:
-  check_format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: hashicorp/setup-terraform@v2
-
-      - name: Terraform Format
-        id: format
-        run: >
-          terraform fmt -check -recursive
-
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -52,10 +40,10 @@ jobs:
           -backend-config region=${{ env.BUCKET_REGION }}
           -backend-config dynamodb_table=${{ env.DYNAMODB_NAME }}
 
-      - name: Terraform Plan
+      - name: Terraform Apply
         working-directory: terraform
-        id: plan
+        id: apply
         run: >
-          terraform plan -no-color -compact-warnings
+          terraform apply -no-color -compact-warnings -auto-approve
           -var region=${{ env.AWS_REGION }}
           -var name=${{ env.CLUSTER_NAME }}
