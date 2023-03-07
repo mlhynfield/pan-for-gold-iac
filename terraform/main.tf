@@ -46,7 +46,6 @@ module "nodepool" {
     {
       encrypted   = true
       volume_type = "gp2"
-      throughput  = 200
       volume_size = 50
     },
   ]
