@@ -9,7 +9,8 @@
                 "autoscaling:*",
                 "elasticloadbalancing:*",
                 "s3:*",
-                "dynamodb:*"
+                "dynamodb:*",
+                "ssm:GetParameter"
             ],
             "Resource": "*"
         }
