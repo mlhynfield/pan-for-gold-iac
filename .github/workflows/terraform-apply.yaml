@@ -13,6 +13,7 @@ env:
   BUCKET_REGION: us-east-1
   CLUSTER_NAME: pan-for-gold
   DYNAMODB_NAME: GitHubActions-Pan-For-Gold-Terraform-Lock
+  REPO_URL: https://github.com/mlhynfield/pan-for-gold-iac
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
@@ -52,3 +53,4 @@ jobs:
           terraform apply -no-color -compact-warnings -auto-approve
           -var region=${{ env.AWS_REGION }}
           -var name=${{ env.CLUSTER_NAME }}
+          -var repo_url=${{ env.REPO_URL }}

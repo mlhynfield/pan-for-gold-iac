@@ -14,7 +14,24 @@ locals {
 
   user_data = <<-EOT
   #!/bin/bash
-  echo "Panning for gold!"
+
+  curl -sfL https://get.k3s.io | sh -
+
+  until kubectl get pods -A | grep 'Running'; do
+    sleep 5
+  done
+
+  kubectl create namespace argocd
+  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/core-install.yaml
+
+  until kubectl get secret -n argocd | grep 'argocd-initial-admin-secret'; do
+    sleep 5
+  done
+  ARGO_PSWD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+  kubectl config set-context --current --namespace=argocd
+  argocd --core login --name admin --password $ARGO_PSWD
+
+  argocd --core repo add ${var.repo_url} --insecure-skip-server-verification
   EOT
 
   tags = {
