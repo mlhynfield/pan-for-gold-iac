@@ -9,3 +9,7 @@ variable "region" {
 variable "public_key" {
   type = string
 }
+
+variable "repo_url" {
+  type = string
+}
