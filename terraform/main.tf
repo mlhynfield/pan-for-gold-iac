@@ -29,6 +29,11 @@ locals {
   done
   ARGO_PSWD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
   kubectl config set-context --current --namespace=argocd
+
+  curl -sSL -o argocd-linux-arm64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
+  sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
+  rm argocd-linux-amd64
+
   argocd --core login --name admin --password $ARGO_PSWD
 
   argocd --core repo add ${var.repo_url} --insecure-skip-server-verification
