@@ -15,7 +15,7 @@ locals {
   user_data = <<-EOT
   #!/bin/bash
 
-  curl -sfL https://get.k3s.io | sh - --write-kubeconfig-mode 666
+  curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 666
 
   until kubectl get pods -A | grep 'Running'; do
     sleep 5
@@ -64,7 +64,7 @@ module "nodepool" {
 
   ami                         = "ami-0f254a6bcc5bdad58"
   ami_ssm_parameter           = "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2"
-  instance_type               = "t4g.micro"
+  instance_type               = "t4g.small"
   key_name                    = module.key_pair.key_pair_name
   vpc_security_group_ids      = [module.security_group.security_group_id]
   associate_public_ip_address = true
