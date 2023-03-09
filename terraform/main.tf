@@ -15,7 +15,7 @@ locals {
   user_data = <<-EOT
   #!/bin/bash
 
-  curl -sfL https://get.k3s.io | sh -
+  curl -sfL https://get.k3s.io | sh - --write-kubeconfig-mode 666
 
   until kubectl get pods -A | grep 'Running'; do
     sleep 5
@@ -32,6 +32,20 @@ locals {
   argocd --core login --name admin --password $ARGO_PSWD
 
   argocd --core repo add ${var.repo_url} --insecure-skip-server-verification
+
+  argocd app create pan-for-gold -N default \
+  --repo https://github.com/mlhynfield/pan-for-gold-iac.git \
+  --path manifest --dest-namespace default \
+  --dest-server https://kubernetes.default.svc --directory-recurse \
+  --sync-policy automated
+
+  until kubectl get deploy -n default | grep 'pan-for-gold'; do
+    sleep 5
+  done
+
+  kubectl -n default expose deploy pan-for-gold \
+  --external-ip "`curl -s https://checkip.amazonaws.com`" \
+  --port 80 --target-port 3000
   EOT
 
   tags = {
