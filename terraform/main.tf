@@ -34,6 +34,8 @@ locals {
   sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
   rm argocd-linux-arm64
 
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
   argocd --core repo add ${var.repo_url}
 
   argocd --core app create pan-for-gold \
