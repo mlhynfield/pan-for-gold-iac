@@ -15,7 +15,7 @@ locals {
   user_data = <<-EOT
   #!/bin/bash
 
-  curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 666
+  curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 666 --tls-san "`curl -s https://checkip.amazonaws.com`"
 
   until kubectl get pods -A | grep 'Running'; do
     sleep 5
