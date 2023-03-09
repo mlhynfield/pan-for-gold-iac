@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pan-for-gold
+  name: pan-for-gold
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pan-for-gold
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pan-for-gold
+    spec:
+      containers:
+      - image: ghcr.io/mlhynfield/pan-for-gold:1.0.0
+        name: pan-for-gold
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: 150m
+            memory: 100Mi
