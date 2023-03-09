@@ -24,21 +24,19 @@ locals {
   kubectl create namespace argocd
   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/core-install.yaml
 
-  until kubectl get secret -n argocd | grep 'argocd-initial-admin-secret'; do
+  kubectl config set-context --current --namespace argocd
+
+  until kubectl get pods -n argocd | grep 'Running'; do
     sleep 5
   done
-  ARGO_PSWD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-  kubectl config set-context --current --namespace=argocd
 
   curl -sSL -o argocd-linux-arm64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
   sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
-  rm argocd-linux-amd64
+  rm argocd-linux-arm64
 
-  argocd --core login --name admin --password $ARGO_PSWD
+  argocd --core repo add ${var.repo_url}
 
-  argocd --core repo add ${var.repo_url} --insecure-skip-server-verification
-
-  argocd app create pan-for-gold -N default \
+  argocd --core app create pan-for-gold \
   --repo https://github.com/mlhynfield/pan-for-gold-iac.git \
   --path manifest --dest-namespace default \
   --dest-server https://kubernetes.default.svc --directory-recurse \
@@ -47,6 +45,8 @@ locals {
   until kubectl get deploy -n default | grep 'pan-for-gold'; do
     sleep 5
   done
+
+  kubectl config set-context --current --namespace default
 
   kubectl -n default expose deploy pan-for-gold \
   --external-ip "`curl -s https://checkip.amazonaws.com`" \
