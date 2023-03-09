@@ -39,7 +39,7 @@ locals {
   argocd --core repo add ${var.repo_url}
 
   argocd --core app create pan-for-gold \
-  --repo https://github.com/mlhynfield/pan-for-gold-iac.git \
+  --repo ${var.repo_url} \
   --path manifest --dest-namespace default \
   --dest-server https://kubernetes.default.svc --directory-recurse \
   --sync-policy automated
