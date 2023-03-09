@@ -30,9 +30,13 @@ locals {
     sleep 5
   done
 
+  sleep 15
+
   curl -sSL -o argocd-linux-arm64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
   sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
   rm argocd-linux-arm64
+
+  sleep 15
 
   export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
@@ -53,8 +57,8 @@ locals {
   kubectl -n default expose deploy pan-for-gold \
   --port 80 --target-port 3000
 
-  kubectl create ingress pan-for-gold \
-  --rule="*=pan-for-gold:80" \
+  kubectl -n default create ingress pan-for-gold \
+  --rule="/=pan-for-gold:80" \
   --annotation kubernetes.io/ingress.class=traefik
   EOT
 
