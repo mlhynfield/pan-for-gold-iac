@@ -34,10 +34,12 @@ locals {
   sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
   rm argocd-linux-arm64
 
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
   argocd --core repo add ${var.repo_url}
 
   argocd --core app create pan-for-gold \
-  --repo https://github.com/mlhynfield/pan-for-gold-iac.git \
+  --repo "${var.repo_url}.git" \
   --path manifest --dest-namespace default \
   --dest-server https://kubernetes.default.svc --directory-recurse \
   --sync-policy automated
@@ -49,8 +51,11 @@ locals {
   kubectl config set-context --current --namespace default
 
   kubectl -n default expose deploy pan-for-gold \
-  --external-ip "`curl -s https://checkip.amazonaws.com`" \
   --port 80 --target-port 3000
+
+  kubectl create ingress pan-for-gold \
+  --rule="*=pan-for-gold:80" \
+  --annotation kubernetes.io/ingress.class=traefik
   EOT
 
   tags = {
