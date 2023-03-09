@@ -39,7 +39,7 @@ locals {
   argocd --core repo add ${var.repo_url}
 
   argocd --core app create pan-for-gold \
-  --repo ${var.repo_url} \
+  --repo "${var.repo_url}.git" \
   --path manifest --dest-namespace default \
   --dest-server https://kubernetes.default.svc --directory-recurse \
   --sync-policy automated
@@ -51,8 +51,11 @@ locals {
   kubectl config set-context --current --namespace default
 
   kubectl -n default expose deploy pan-for-gold \
-  --external-ip "`curl -s https://checkip.amazonaws.com`" \
   --port 80 --target-port 3000
+
+  kubectl create ingress pan-for-gold \
+  --rule="*=pan-for-gold:80" \
+  --annotation kubernetes.io/ingress.class=traefik
   EOT
 
   tags = {
