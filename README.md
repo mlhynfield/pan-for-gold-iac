@@ -12,7 +12,9 @@ This repository contains all IaC automation to deploy the [pan-for-gold][2] appl
     - [Quickstart](#quickstart)
     - [Quick Teardown](#quick-teardown)
     - [Granular Setup & Destroy](#granular-setup--destroy)
-  - [SSH node access](#ssh-node-access)
+  - [Build and Deploy](#build-and-deploy)
+    - [SSH node access](#ssh-node-access)
+    - [`kubectl` cluster access](#kubectl-cluster-access)
 - [Features](#features)
 - [Architecture](#architecture)
 
@@ -36,13 +38,11 @@ This repository contains all IaC automation to deploy the [pan-for-gold][2] appl
 
 ### Initial Setup
 
-Clone this repository or a fork
+- Clone this repository or a fork
 
-```bash
-git clone https://github.com/mlhynfield/pan-for-gold-iac.git
-```
-
-#### Quickstart
+  ```bash
+  git clone https://github.com/mlhynfield/pan-for-gold-iac.git
+  ```
 
 - Change directory to `scripts`
 
@@ -51,6 +51,9 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
   ```
 
 - Log into AWS CLI with `aws configure` or `aws sso login`
+
+#### Quickstart
+
 - Execute `setup.sh`
 
   ```bash
@@ -59,13 +62,6 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
 
 #### Quick teardown
 
-- Change directory to `scripts`
-
-  ```bash
-  cd scripts
-  ```
-
-- Log into AWS CLI with `aws configure` or `aws sso login`
 - Execute `destroy.sh`
 
   ```bash
@@ -73,12 +69,6 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
   ```
 
 #### Granular setup & destroy
-
-- Change directory to `scripts`
-
-  ```bash
-  cd scripts
-  ```
 
 - Choose which scripts to execute
   - `granular_setup`
@@ -89,7 +79,6 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
     - `destroy-oidc.sh`: Removes GitHub OIDC
     - `destroy-iam.sh`: Destroys GitHub OIDC IAM role and policy
     - `destroy-backend.sh`: Destroys S3 bucket and DynamoDB table
-- Log into AWS CLI with `aws configure` or `aws sso login`
 - Execute desired script(s)
   - Setup Example:
   
@@ -103,7 +92,23 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
     granular_destroy/destroy-backend.sh
     ```
 
-### SSH node access
+### Build and deploy
+
+- Execute the Terraform Apply GitHub Actions workflow by either
+  - Pushing a commit modifying any `.tf` Terraform file to `master` branch
+  - Running the workflow from the **Actions** tab in GitHub by choosing **Run workflow**
+- Retrieve the public EC2 instance IP and copy to clipboard
+
+  ```bash
+  aws ec2 describe-instances --output text --no-cli-pager \
+  --query 'Reservations[].Instances[?Tags[?Value == `pan-for-gold`]].NetworkInterfaces[0].Association.PublicIp'
+  ```
+
+- Navigate to the copied IP address in your browser
+
+### Cluster Access
+
+#### Initial configuration
 
 - Change directory to `scripts`
 
@@ -112,7 +117,7 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
   ```
 
 - Log into AWS CLI with `aws configure` or `aws sso login`
-- Execute `sg_rules.sh`, retrieve EC2 public IP and SSH into instance
+- Execute `sg_rules.sh` and retrieve EC2 public IP
 
   ```bash
   ./sg_rules.sh
@@ -121,8 +126,47 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
   aws ec2 describe-instances --output text --no-cli-pager \
   --query 'Reservations[].Instances[?Tags[?Value == `pan-for-gold`]].NetworkInterfaces[0].Association.PublicIp'\
   )
+  ```
 
+#### SSH node access
+
+- SSH into instance
+
+  ```bash
   ssh ec2-user@$INSTANCE_IP
+  ```
+
+#### `kubectl` cluster access
+
+- Use `scp` to copy remote kubeconfig to local directory
+
+  ```bash
+  scp ec2-user@$INSTANCE_IP:/etc/rancher/k3s/k3s.yaml $HOME/.kube/pan-for-gold
+  ```
+
+- Execute `modify_kubeconfig.sh`
+
+  ```bash
+  kubeconfig/modify_kubeconfig
+  ```
+
+- Then either
+  - Set the downloaded file as the kubeconfig for your current shell
+
+    ```bash
+    export KUBECONFIG=$HOME/.kube/pan-for-gold
+    ```
+
+  - Or execute `merge_kubeconfig.sh` to merge into existing kubeconfig file
+
+    ```bash
+    kubeconfig/merge_kubeconfig
+    ```
+
+- Validate connectivity
+
+  ```bash
+  kubectl get nodes
   ```
 
 ## Features
@@ -145,10 +189,22 @@ git clone https://github.com/mlhynfield/pan-for-gold-iac.git
   - Runs with every push to `master` branch
   - Only runs when `.tf` files are created or modified
   - Runs `terraform apply` to attempt infrastructure build in target AWS account
+- Automated deployment
+  - K3s cluster and ArgoCD installed from EC2 user data
+  - Panning for Gold app deployed with ArgoCD
 
 ## Architecture
 
-TODO
+- AWS EC2 instance on Virtual Private Cloud
+  - 3 public subnets
+  - 1 security group
+  - 1 EC2 instance with public IP
+  - 1 SSH key pair for direct node access
+- K3s on EC2
+  - K3s cluster configured and installed at EC2 startup
+  - ArgoCD core installation installed and configured
+  - ArgoCD GitOps deployment synced to [Panning for Gold repository][2]
+  - Application served over EC2 public IP via Traefik ingress
 
 [1]: https://en.wikipedia.org/wiki/Golden_ratio
 [2]: https://github.com/mlhynfield/pan-for-gold
