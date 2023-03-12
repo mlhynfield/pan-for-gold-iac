@@ -12,7 +12,7 @@ locals {
     "node01"
   ]
 
-  user_data = "${file("user_data.sh")}"
+  user_data = file("user_data.sh")
 
   tags = {
     app = "${var.name}"
