@@ -12,7 +12,13 @@ locals {
     "node01"
   ]
 
-  user_data = file("user_data.sh")
+  user_data = templatefile(
+    "user_data.tftpl",
+    {
+      name     = "${var.name}",
+      repo_url = "${var.repo_url}"
+    }
+  )
 
   tags = {
     app = "${var.name}"
