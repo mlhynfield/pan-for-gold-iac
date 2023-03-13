@@ -28,23 +28,23 @@ sleep 15
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-argocd --core repo add ${var.repo_url}
+argocd --core repo add ${repo_url}
 
-argocd --core app create ${var.name} \
---repo "${var.repo_url}.git" \
+argocd --core app create ${name} \
+--repo "${repo_url}.git" \
 --path manifest --dest-namespace default \
 --dest-server https://kubernetes.default.svc --directory-recurse \
 --sync-policy automated
 
-until kubectl get deploy -n default | grep '${var.name}'; do
+until kubectl get deploy -n default | grep '${name}'; do
 sleep 5
 done
 
 kubectl config set-context --current --namespace default
 
-kubectl -n default expose deploy ${var.name} \
+kubectl -n default expose deploy ${name} \
 --port 80 --target-port 3000
 
-kubectl -n default create ingress ${var.name} \
---rule="/=${var.name}:80" \
+kubectl -n default create ingress ${name} \
+--rule="/=${name}:80" \
 --annotation kubernetes.io/ingress.class=traefik
